@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import logo from './imports/IMG_3096.PNG'
 import {
+
   Icon,
   Panel,
   SectionHeader,
@@ -30,6 +30,8 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
+
+const logo = '/prenit-logo.png'
 
 /* ============================================================ static data */
 type Gas = { key: string; label: string; unit: string; value: string; state: AState; vac?: boolean }
