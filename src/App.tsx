@@ -433,17 +433,11 @@ function Dome({
   /* Black rim ellipse — LEDs must stay inside this (with margin for their radius) */
   const rimRx = 76
   const rimRy = 63
-  /* Orbital fractions of the rim (elliptical, not circular) so dots never cross the black line */
-  const rings = withCam
-    ? [
-        { frac: 0.50, n: 8, r: 5 },
-        { frac: 0.78, n: 14, r: 4.5 },
-      ]
-    : [
-        { frac: 0.30, n: 5, r: 5.5 },
-        { frac: 0.55, n: 10, r: 5.2 },
-        { frac: 0.78, n: 16, r: 4.5 },
-      ]
+  /* Same LED count and orbit on both heads so the white spots line up */
+  const rings = [
+    { frac: 0.50, n: 8, r: 5 },
+    { frac: 0.78, n: 14, r: 4.5 },
+  ]
   const clipId = `dome-clip-${cx}-${cy}`
   const leds: { x: number; y: number; r: number }[] = []
   rings.forEach(({ frac, n, r }) => {
@@ -458,6 +452,19 @@ function Dome({
       })
     }
   })
+  if (!withCam) {
+    leds.push({ x: cx, y: cy, r: 5.5 })
+    const innerN = 5
+    const innerFrac = 0.26
+    for (let i = 0; i < innerN; i++) {
+      const a = (i / innerN) * Math.PI * 2
+      leds.push({
+        x: cx + Math.cos(a) * rimRx * innerFrac,
+        y: cy + Math.sin(a) * rimRy * innerFrac,
+        r: 5,
+      })
+    }
+  }
   return (
     <>
       <defs>
@@ -1462,11 +1469,11 @@ function ClimateTile({
       {icon && <div className="pointer-events-none absolute -right-2 -top-2 opacity-[0.11]" style={{ color: accent }}>{icon}</div>}
       <div className="font-700 uppercase text-[#9fb1c2] text-[clamp(0.65rem,1.2vh,0.8rem)] tracking-[0.12em]">{label}</div>
       <div
-        className="font-mono font-800 leading-none tabular-nums text-[clamp(1.6rem,4.2vh,2.4rem)]"
+        className="font-mono font-800 leading-none tabular-nums text-[clamp(2.6rem,8vh,4.25rem)]"
         style={{ color: accent, textShadow: `0 0 22px color-mix(in srgb, ${accent} 40%, transparent)` }}
       >
         {value}
-        <span className="ml-1 text-[clamp(0.85rem,1.8vh,1.1rem)] font-600 text-[#7f93a6]">{unit}</span>
+        <span className="ml-1 text-[clamp(1.15rem,2.6vh,1.75rem)] font-600 text-[#7f93a6]">{unit}</span>
       </div>
       <div className="mt-1 flex items-center gap-2">
         <span className="text-[10px] font-700 uppercase tracking-[0.12em] text-[#7f93a6]">
@@ -1954,7 +1961,7 @@ function Environment({ otOccupied, setOtOccupied }: any) {
                 <span className="text-xs font-600 text-[#9fb1c2]">Temperature</span>
                 <StateGlyph state="ok" />
               </div>
-              <div className="my-2 font-mono text-3xl font-700">20.4<span className="text-lg text-[#7f93a6]">°C</span></div>
+              <div className="my-2 font-mono text-5xl font-700">20.4<span className="text-2xl text-[#7f93a6]">°C</span></div>
               <div className="mb-1 flex justify-between text-[11px] text-[#7f93a6]"><span>Set point</span><span className="font-mono">{tempSet}°C</span></div>
               <Slider value={tempSet} min={16} max={26} onChange={setTempSet} color="var(--color-violet)" />
             </div>
@@ -1963,7 +1970,7 @@ function Environment({ otOccupied, setOtOccupied }: any) {
                 <span className="text-xs font-600 text-[#9fb1c2]">Humidity</span>
                 <StateGlyph state="ok" />
               </div>
-              <div className="my-2 font-mono text-3xl font-700">48<span className="text-lg text-[#7f93a6]">%</span></div>
+              <div className="my-2 font-mono text-5xl font-700">48<span className="text-2xl text-[#7f93a6]">%</span></div>
               <div className="mb-1 flex justify-between text-[11px] text-[#7f93a6]"><span>Set point</span><span className="font-mono">{rhSet}%</span></div>
               <Slider value={rhSet} min={30} max={60} onChange={setRhSet} color="var(--color-blue)" />
             </div>
