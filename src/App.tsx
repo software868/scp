@@ -32,6 +32,7 @@ import {
 } from 'recharts'
 
 const logo = '/prenit-logo.png'
+const DISPLAY_ENABLED = false
 
 /* ============================================================ static data */
 type Gas = { key: string; label: string; unit: string; value: string; state: AState; vac?: boolean }
@@ -91,7 +92,7 @@ type Phase = keyof typeof CHECKLIST
 export default function App() {
   const [version, setVersion] = useState<1 | 2 | 3>(3)
   const modelLabel = ({ 1: 'C', 2: 'E', 3: 'S' } as const)[version]
-  const [page, setPage] = useState<string>('home')
+  const [page, setPage] = useState<string>(DISPLAY_ENABLED ? 'home' : 'settings')
   const [now, setNow] = useState(new Date())
 
   // timers — proc counts up; anae is a countdown from a set H:M target
@@ -187,7 +188,7 @@ export default function App() {
         modelLabel={modelLabel}
         onSettings={onSettings}
         adminActive={page === 'admin'}
-        goHome={() => setPage('home')}
+        goHome={() => DISPLAY_ENABLED && setPage('home')}
         goSettings={() => setPage('settings')}
         goAdmin={() => setPage('admin')}
       />
@@ -283,13 +284,15 @@ function TopBar({
         </button>
 
         <div className="flex items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-ink-850)] p-1">
-          <button
-            onClick={goHome}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-700 transition-colors sm:px-3 sm:text-xs ${!onSettings ? 'bg-[var(--color-cyan)] text-[#04201d]' : 'text-[#8ea3b6] hover:text-white'}`}
-          >
-            <Icon.Monitor size={15} />
-            <span className="hidden xs:inline sm:inline">Display</span>
-          </button>
+          {DISPLAY_ENABLED && (
+            <button
+              onClick={goHome}
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-700 transition-colors sm:px-3 sm:text-xs ${!onSettings ? 'bg-[var(--color-cyan)] text-[#04201d]' : 'text-[#8ea3b6] hover:text-white'}`}
+            >
+              <Icon.Monitor size={15} />
+              <span className="hidden xs:inline sm:inline">Display</span>
+            </button>
+          )}
           <button
             onClick={goSettings}
             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-700 transition-colors sm:px-3 sm:text-xs ${onSettings && !adminActive ? 'bg-[var(--color-cyan)] text-[#04201d]' : 'text-[#8ea3b6] hover:text-white'}`}
@@ -657,7 +660,7 @@ function MiniBtn({ icon, label, onClick, tint }: { icon: ReactNode; label: strin
   )
 }
 
-function ActionBtn({ icon, label, accent, onClick, live }: { icon: ReactNode; label: string; accent: string; onClick: () => void; live?: boolean }) {
+function ActionBtn({ icon, label, accent, onClick, live, value }: { icon: ReactNode; label: string; accent: string; onClick: () => void; live?: boolean; value?: string }) {
   return (
     <button
       onClick={onClick}
@@ -678,6 +681,48 @@ function ActionBtn({ icon, label, accent, onClick, live }: { icon: ReactNode; la
       <span className="relative max-w-full truncate px-0.5 text-center text-[clamp(0.6rem,1.4vh,0.7rem)] font-800 leading-tight text-[var(--color-fg)]">
         {label}
       </span>
+      {value && (
+        <span className="relative font-mono text-[clamp(0.55rem,1.2vh,0.65rem)] font-800 tabular-nums" style={{ color: accent }}>
+          {value}
+        </span>
+      )}
+    </button>
+  )
+}
+
+const GAS_TILE_ACCENTS = [
+  'var(--color-ok)',
+  'var(--color-blue)',
+  'var(--color-violet)',
+  'var(--color-cyan)',
+  'var(--color-gold)',
+  'var(--color-blue)',
+]
+
+function GasTile({ g, accent, onClick }: { g: Gas; accent: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative flex h-full min-h-0 w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border p-1 transition-all hover:-translate-y-0.5 active:scale-95 sm:gap-1 sm:p-1.5"
+      style={{
+        borderColor: `color-mix(in srgb, ${accent} 32%, var(--color-line))`,
+        background: `linear-gradient(160deg, color-mix(in srgb, ${accent} 12%, var(--color-ink-850)), var(--color-ink-900))`,
+      }}
+    >
+      <div className="pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full opacity-15 blur-2xl transition-opacity group-hover:opacity-30" style={{ background: `radial-gradient(circle, ${accent}, transparent 70%)` }} />
+      <span
+        className="relative grid aspect-square h-[clamp(1.75rem,28%,2.5rem)] place-items-center rounded-lg"
+        style={{ background: `color-mix(in srgb, ${accent} 20%, transparent)`, color: accent }}
+      >
+        {g.vac ? <Icon.Drop size={18} /> : <Icon.Wind size={18} />}
+      </span>
+      <span className="relative max-w-full truncate px-0.5 text-center text-[clamp(0.6rem,1.4vh,0.7rem)] font-800 leading-tight text-[var(--color-fg)]">
+        {g.label}
+      </span>
+      <span className="relative font-mono text-[clamp(0.55rem,1.2vh,0.65rem)] font-800 tabular-nums" style={{ color: accent }}>
+        {g.value} {g.unit}
+      </span>
     </button>
   )
 }
@@ -695,7 +740,7 @@ function EnvRow({ label, value, unit, data, color }: { label: string; value: str
 }
 
 function SettingsOverview({ shared }: any) {
-  const { now, gases, proc, setProc, anae, setAnae, setPage } = shared
+  const { now, gases, setGases, proc, setProc, anae, setAnae, setPage } = shared
   const clock = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
   const secs = now.toLocaleTimeString('en-GB', { second: '2-digit' })
   const date = now.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
@@ -711,13 +756,10 @@ function SettingsOverview({ shared }: any) {
     setAnae((a: any) => (a.run ? { ...a, run: false } : a.sec > 0 ? { ...a, run: true } : a.target > 0 ? { ...a, sec: a.target, run: true } : a))
 
   const stats = [
-    { icon: <Icon.Shield size={16} />, label: 'Gases', value: total ? `${total} alert` : 'Normal', color: gasColor },
     { icon: <Icon.Power size={16} />, label: 'IPS', value: 'Normal', color: 'var(--color-ok)' },
-    { icon: <Icon.Fan size={16} />, label: 'HEPA', value: '99.98%', color: 'var(--color-ok)' },
+    { icon: <Icon.Fan size={16} />, label: 'HEPA', value: 'Healthy', color: 'var(--color-ok)' },
     { icon: <Icon.Shield size={16} />, label: 'UV', value: 'Off', color: '#6f8394' },
     { icon: <Icon.Drop size={16} />, label: 'Pressure', value: '+11 Pa', color: 'var(--color-blue)' },
-    { icon: <Icon.Temp size={16} />, label: 'Temp', value: '20.4 °C', color: 'var(--color-cyan)' },
-    { icon: <Icon.Drop size={16} />, label: 'Humidity', value: '48 % RH', color: 'var(--color-blue)' },
   ]
 
   return (
@@ -776,7 +818,7 @@ function SettingsOverview({ shared }: any) {
         />
       </div>
 
-      {/* ---- main: surgical lights · quick actions (dominant height) ---- */}
+      {/* ---- main: surgical lights · gases (dominant height) ---- */}
       <div className="relative grid min-h-0 flex-[2.05] grid-cols-1 gap-2 sm:gap-3 lg:grid-cols-[1.65fr_1fr]">
         {/* surgical lights */}
         <section className="relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-ink-950)] p-2 sm:p-3">
@@ -789,19 +831,23 @@ function SettingsOverview({ shared }: any) {
           </div>
         </section>
 
-        {/* quick actions — fills pane; 3×3 cells share height equally */}
+        {/* gases (first 6) + remaining shortcuts — 3×3 cells share height equally */}
         <section className="relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-ink-900)] p-2 sm:p-3">
-          <div className="mb-1.5 shrink-0 text-xs font-800 uppercase tracking-[0.16em] text-[var(--color-fg-soft)] sm:mb-2">Quick Actions</div>
+          <div className="mb-1.5 shrink-0 text-xs font-800 uppercase tracking-[0.16em] text-[var(--color-fg-soft)] sm:mb-2">Gases</div>
           <div className="grid min-h-0 flex-1 grid-cols-3 grid-rows-3 gap-1.5 sm:gap-2">
-            <ActionBtn icon={<Icon.Check size={18} />} label="Checklist" accent="var(--color-ok)" onClick={() => setPage('checklist')} />
-            <ActionBtn icon={<Icon.Phone size={18} />} label="Telephone" accent="var(--color-blue)" onClick={() => setPage('comm')} />
-            <ActionBtn icon={<Icon.Music size={18} />} label="Music" accent="var(--color-violet)" onClick={() => setPage('media')} />
-            <ActionBtn icon={<Icon.Bulb size={18} />} label="Room Lights" accent="var(--color-cyan)" onClick={() => setPage('lighting')} />
-            <ActionBtn icon={<Icon.Cam size={18} />} label="Camera" accent="var(--color-gold)" onClick={() => setPage('comm')} />
-            <ActionBtn icon={<Icon.Wind size={18} />} label="Climate" accent="var(--color-blue)" onClick={() => setPage('environment')} />
+            {gases.slice(0, 6).map((g: Gas, i: number) => (
+              <GasTile
+                key={g.key}
+                g={g}
+                accent={GAS_TILE_ACCENTS[i]}
+                onClick={() =>
+                  setGases((prev: Gas[]) => prev.map((x, xi) => (xi === i ? { ...x, state: cycle[x.state] } : x)))
+                }
+              />
+            ))}
             <ActionBtn icon={<Icon.Clock size={18} />} label="Timers" accent="var(--color-gold)" onClick={() => setPage('timers')} />
-            <ActionBtn icon={<Icon.Chart size={18} />} label="Analytics" accent="var(--color-gold)" onClick={() => setPage('analytics')} />
-            <ActionBtn icon={<Icon.Rec size={18} />} label="Recording" accent="var(--color-caution)" onClick={() => setPage('recording')} />
+            <ActionBtn icon={<Icon.Temp size={18} />} label="Temp" value="20.4 °C" accent="var(--color-gold)" onClick={() => setPage('environment')} />
+            <ActionBtn icon={<Icon.Drop size={18} />} label="Humidity" value="48 % RH" accent="var(--color-caution)" onClick={() => setPage('environment')} />
           </div>
         </section>
       </div>
