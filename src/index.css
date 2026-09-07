@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Ground — softer, warmer graphite */
+  --color-ink-950: #0e1216;
+  --color-ink-900: #131820;
+  --color-ink-850: #182029;
+  --color-ink-800: #1e2833;
+  --color-ink-750: #26313d;
+  --color-ink-700: #303d4a;
+  --color-line: #2a3540;
+
+  /* Brand — muted pastel, low intensity */
+  --color-cyan: #74c7bd;
+  --color-cyan-dim: #4f9b93;
+  --color-blue: #8fb0d6;
+  --color-violet: #9ba3d8;  /* shifted bluer — away from pink-lilac, toward periwinkle */
+  --color-gold: #d99a5c;
+  --color-pastel: #a9c3e0;
+
+  /* Clinical alarm — IEC 60601-1-8 compliant */
+  --color-ok: #8bc9a4;
+  --color-caution: #e0b840;   /* amber — unambiguous medium-priority */
+  --color-critical: #dc4f4f;  /* red — unambiguous high-priority, not pink */
+
+  /* Text hierarchy — used across the panel */
+  --color-fg: #e7eef5;
+  --color-fg-soft: #cdd9e5;
+  --color-muted: #8ea3b6;
+  --color-muted-dim: #7f93a6;
+  --color-muted-deep: #5f7286;
+  --color-track: #1b2530;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  height: 100dvh;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink-950);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Module pages fill the settings pane without document scroll */
+.module-fit {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.module-fit.overflow-y-auto {
+  overflow-y: auto;
+}
+
+/* Fluid type — sized for OR panels (~1080p / 22") that must fit without scroll */
+.fluid-clock,
+.fluid-timer {
+  /* shared size for Theatre Time, Procedure, and Anaesthesia on Home */
+  font-size: clamp(3.25rem, 32cqh, 9.5vh);
+}
+
+/* Overview page — procedure, theatre time, anaesthesia read-outs */
+.overview-numeric {
+  font-size: 48px;
+}
+.overview-timer-numeric {
+  font-size: 60px;
+  text-align: center;
+}
+.fluid-label {
+  font-size: clamp(0.7rem, 3.2cqh, 1.05rem);
+}
+
+.home-deck {
+  container-type: size;
+}
+
+/* Horizontal chip scroller (mobile module nav) */
+.chip-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.chip-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe-area padding for notched devices */
+.safe-x {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+.safe-b {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+@keyframes softpulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-critical) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+.softpulse {
+  animation: softpulse 0.55s ease-out infinite; /* ≈1.8 Hz — IEC 60601-1-8 §6.5: 1.4–2.8 Hz */
+}
+
+/* Larger slider thumb for gloved OR touch use */
+input[type='range']::-webkit-slider-thumb {
+  width: 26px !important;
+  height: 26px !important;
+}
+input[type='range']::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+}
+
+/* Hide scrollbars until scrolling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: #24313f;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+@keyframes ringspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ecgmove {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, -2%, 0) scale(1.08);
+  }
+}
+@keyframes hue {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.ecgmove {
+  animation: ecgmove 6s linear infinite;
+}
+.sweep {
+  transform-origin: center;
+  animation: sweep 7s linear infinite;
+}
+.drift {
+  animation: drift 16s ease-in-out infinite;
+}
+.breathe {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+.blink {
+  animation: blink 1s steps(1, end) infinite;
+}
+/* IEC 60601-1-8 high-priority alarm: 1.4–2.8 Hz — use on critical alarm indicators */
+.blink-critical {
+  animation: blink 0.45s steps(1, end) infinite;
+}
+/* IEC 60601-1-8 medium-priority alarm: 0.4–0.8 Hz — use on caution/medium alarm indicators */
+.blink-caution {
+  animation: blink 1.25s steps(1, end) infinite;
+}
+.glow {
+  animation: glow 4s ease-in-out infinite;
+}
+@keyframes laminar {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 26px;
+  }
+}
+.laminar {
+  animation: laminar 2.8s linear infinite;
+}
+@keyframes motefall {
+  0% {
+    transform: translateY(-8%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(120%);
+    opacity: 0;
+  }
+}
+.motefall {
+  animation: motefall 6s linear infinite;
+}

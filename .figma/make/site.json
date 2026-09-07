@@ -1,0 +1,10 @@
+{
+  "description": "Streamline surgical operations with a comprehensive control panel that integrates monitoring, communication, and analytics for medical professionals in operating theatres.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
